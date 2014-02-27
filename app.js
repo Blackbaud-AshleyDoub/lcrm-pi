@@ -13,6 +13,12 @@ var sfCredentials = {
 	securityToken: 'e6chnnk2t6QLdYs279m62bRu4'
 };
 
+var totalVotes;
+var followingVotes;
+var followingVotesName = 'Susan G. Komen';
+var followingTable = 'Survey_Response__c'
+var followingField = 'Vote__c'
+
 function authenticationCallback(error, response){
 	console.log('In authenticaion callback.');
 	genericCallback(error, response);
@@ -31,9 +37,9 @@ function genericCallback(error, response){
 	}
 	else{
 		console.log('Got response ' + response);
-		if(response && response.records){
-			printRecords(response.records);
-		}
+		//if(response && response.records){
+			//print(response.records);
+		//}
 	}
 }
 
@@ -46,15 +52,20 @@ function insertCallback(error, response){
 	genericCallback(error, response);
 }
 
-function insertAccount(name){
-	var acc = nforce.createSObject('Account');
-	acc.set('Name', name);
-	acc.set('Phone', '800-555-2345');
-	connection.insert({ sobject: acc }, insertCallback());
+function initializingTotals(tableName,callbackFunction){
+	connection.query({query:'SELECT Id FROM '+tableName}, function(error,response){		
+		totalVotes = response.records.length;
+		console.log("Votes:"+ totalVotes);
+		connection.query({query:"SELECT Id FROM "+tableName+" WHERE "+ followingField +" = '"+followingVotesName+"'"},function(error,response){
+			followingVotes = response.records.length;
+			console.log('percentage: '+followingVotes/totalVotes);
+			callbackFunction();
+		});		
+	});
 }
 
 function basicLittleQuery(){
-	var query = 'SELECT Id, Name FROM Account';
+	var query = 'SELECT Id, Vote__c FROM Survey_Response__c';
 	connection.query({query:query}, queryCallback);
 }
 
@@ -69,14 +80,21 @@ function subscribe(topicName){
 }
 
 function handleData(data){
-	console.log('got stream data ' + data.sobject.Name);
+	console.log('got stream data ' + data.sobject.Vote__c);
+	totalVotes++;
+	if(data.sobject.Vote__c == followingVotesName){
+		followingVotes++;
+	}
+	console.log('percentage: '+followingVotes/totalVotes);
 }
 
 function main(){
-	console.log('Starting in main().');
-	//insertAccount('Hi Alan');
-	//basicLittleQuery();
-	subscribe('AllResponses');
+	console.log('Starting in main().');		
+
+	initializingTotals(followingTable,function() {
+		subscribe('AllVotes');
+	});
+
 	console.log('Done in main().');
 }
 
