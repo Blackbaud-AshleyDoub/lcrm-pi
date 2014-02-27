@@ -38,7 +38,7 @@ function genericCallback(error, response){
 }
 
 function print(object){
-	console.log(JSON.stringify(objects));
+	console.log(JSON.stringify(object));
 }
 
 function insertCallback(error, response){
