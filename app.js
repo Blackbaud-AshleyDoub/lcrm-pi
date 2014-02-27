@@ -63,16 +63,13 @@ function subscribe(topicName){
 	var stream = connection.stream({topic:topicName});
 	stream.on('connect', function( ){ console.log('connected' ); });
 	stream.on('error',   function(e){ console.log('error ' + e); });
-	stream.on('data',    function(d){ print(d);});
+	stream.on('data',    handleData);
 	console.log('Returning stream ' + stream);
 	return stream;
 }
 
-function dataToString(data){
-	var s = 'Data is ';
-	s += data.get('Id');
-	s += data.get('Name');
-	return s;
+function handleData(data){
+	console.log('got stream data ' + data.sobject.Name);
 }
 
 function main(){
