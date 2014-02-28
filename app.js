@@ -30,6 +30,14 @@ function handleCallbackErrors(error, response){
 	}
 }
 
+function printVoteStatus(){
+		console.log('Votes:');
+		for(cause in votesByCause){
+			console.log('\t' + votesByCause[cause] + '\t' + getPercentage(cause) + '\t' + cause);
+		}
+		console.log('\tTotal: ' + totalVotes);
+}
+
 function initializeTotals(){
 	connection.query({query:'SELECT Count(Id) FROM Survey_Response__c'}, function(error, response){
 		handleCallbackErrors(error, response);
@@ -40,11 +48,7 @@ function initializeTotals(){
 				var record = response.records[i];
 				votesByCause[record.get("Vote__c")] = record.get("expr0");
 			}
-			console.log('Votes:');
-			for(cause in votesByCause){
-				console.log('\t' + votesByCause[cause] + '\t' + getPercentage(cause) + ' ' + cause);
-			}
-			console.log('\tTotal: ' + totalVotes);
+			printVoteStatus();
 			subscribe('AllVotes');
 		});		
 	});
@@ -68,8 +72,9 @@ function handleData(data){
 	var cause = data.sobject.Vote__c;
 	console.log('Just received vote for ' + cause + '!');
 	totalVotes++;
+	if(votesByCause[cause] === undefined){votesByCause[cause] = 0;}
 	votesByCause[cause] = votesByCause[cause] + 1;
-	console.log( cause + ' now has ' + getPercentage(cause) + ' of the vote.');
+	console.log(cause + ' now has ' + getPercentage(cause) + ' of the vote.');
 }
 
 function authenticationCallback(error, response){
