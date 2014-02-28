@@ -33,11 +33,12 @@ function handleCallbackErrors(error, response){
 }
 
 function printVoteStatus(){
-		log('Votes:');
+		//log('Votes:');
 		for(cause in votesByCause){
-			log('\t' + votesByCause[cause] + '\t' + getPercentage(cause) + '\t' + cause);
+			//log('\t' + votesByCause[cause] + '\t' + getPercentage(cause) + '\t' + cause);
+			log(getPercentage(cause) + '\t' + cause);
 		}
-		log('\tTotal: ' + totalVotes);
+		//log('\tTotal: ' + totalVotes);
 }
 
 function initializeTotals(){
@@ -72,11 +73,12 @@ function getPercentage(cause){
 
 function handleData(data){
 	var cause = data.sobject.Vote__c;
-	log('Just received vote for ' + cause + '!');
+	//log('Just received vote for ' + cause + '!');
 	totalVotes++;
 	if(votesByCause[cause] === undefined){votesByCause[cause] = 0;}
 	votesByCause[cause] = votesByCause[cause] + 1;
 	log(cause + ' now has ' + getPercentage(cause) + ' of the vote.');
+	log(getPercentage(cause) + '\t' + cause);
 }
 
 function authenticationCallback(error, response){
@@ -87,12 +89,12 @@ function authenticationCallback(error, response){
 }
 
 function main(){
-	log('In main.');		
+	//log('In main.');		
 	initializeTotals();
 }
 
-log('Connecting.');
+//log('Connecting.');
 var connection = require('nforce').createConnection(appCredentials);
-log('Authenticating.');
+//log('Authenticating.');
 connection.authenticate(sfCredentials, authenticationCallback);
 
