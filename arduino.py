@@ -50,7 +50,12 @@ def toggle(pin, state):
 def readInput():
 	#watchFor = 'Susan G. Komen'
 	#watchFor = 'American Association of Retired Persons (AARP)'
-	watchFor = 'Livestrong'
+	#watchFor = 'Livestrong'
+	#watchFor = 'Environmental Defense Fund (EDF)'
+	#watchFor = 'Juvenile Diabetes Research Foundation (JDRF)'
+	#watchFor = 'League of Conservation Voters (LCV)'
+	watchFor = 'Michael J. Fox Foundation (MJFF)'
+
 	while True:
 		line = sys.stdin.readline()
 		if line == '':
