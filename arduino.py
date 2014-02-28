@@ -7,6 +7,7 @@ import sys
 import signal
 
 board = None
+pins = None
 
 def flashOnBoardLED():
 	led = board.get_pin('d:13:o')
@@ -24,12 +25,13 @@ def board():
 	board = pyfirmata.Arduino('/dev/ttyACM0')
 	print 'done'
 	sys.stdout.flush()
-
-def jellyfish():
+	global pins
 	pins = []
 	for pin in range(2,12):
 		print 'Initializing pin', pin
 		pins.append(board.get_pin('d:' + str(pin).zfill(2) + ':o'))
+
+def jellyfish():
 	state = True;
 	while True:
 		for pin in pins:
@@ -47,33 +49,29 @@ def toggle(pin, state):
 
 def readInput():
 	watchFor = 'Susan G. Komen'
-	for line in fileinput.input():
+	while True:
+		line = sys.stdin.readline()
+		print 'Reading line', line.strip()
 		percentage, cause = line.strip().split('\t')
 		if cause == watchFor:
-			print percentage
+			turnOnFirstN(int(percentage.split('%')[0])/10)
 
 def destroy(signal, frame):
 	print 'Stopping board...',
 	if board != None:
 		board.exit()
 	print 'done'
+	exit()
 
 def turnOnFirstN(n):
 	for i in range(n):
-		pin[i].write(1)
-	for i in range(n,11):
-		pin[i].write(0)
+		pins[i].write(1)
+	for i in range(n,10):
+		pins[i].write(0)
 
 signal.signal(signal.SIGINT, destroy)
 board()
-jellyfish()
-turnOnFirstN(3)
-time.wait(2)
-turnOnFirstN(8)
-time.wait(2)
-turnOnFirstN(0)
-time.wait(2)
-turnOnFirstN(10)
-
+#jellyfish()
 #flashOnBoardLED()
+readInput()
 
