@@ -48,13 +48,19 @@ def toggle(pin, state):
 		pin.write(0)
 
 def readInput():
-	watchFor = 'Susan G. Komen'
+	#watchFor = 'Susan G. Komen'
+	#watchFor = 'American Association of Retired Persons (AARP)'
+	watchFor = 'Livestrong'
 	while True:
 		line = sys.stdin.readline()
-		print 'Reading line', line.strip()
-		percentage, cause = line.strip().split('\t')
-		if cause == watchFor:
-			turnOnFirstN(int(percentage.split('%')[0])/10)
+		if line == '':
+			continue
+		try:
+			percentage, cause = line.strip().split('\t')
+			if cause == watchFor:
+				turnOnFirstN(int(percentage.split('%')[0])/10)
+		except:
+			print 'wtf is this line?', line
 
 def destroy(signal, frame):
 	print 'Stopping board...',

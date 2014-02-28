@@ -52,7 +52,8 @@ function initializeTotals(){
 				votesByCause[record.get("Vote__c")] = record.get("expr0");
 			}
 			printVoteStatus();
-			subscribe('AllVotes');
+			setTimeout(initializeTotals(), 5000); //omg remove this after the demo, okay?
+			//subscribe('AllVotes'); // this was the real callback, restore it
 		});		
 	});
 }
