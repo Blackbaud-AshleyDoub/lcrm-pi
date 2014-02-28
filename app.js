@@ -13,11 +13,9 @@ var sfCredentials = {
 	securityToken: 'e6chnnk2t6QLdYs279m62bRu4'
 };
 
+
 var totalVotes;
-var followingVotes;
-var followingVotesName = 'Susan G. Komen';
-var followingTable = 'Survey_Response__c';
-var followingField = 'Vote__c';
+var votesByCause = {};
 
 function print(object){
 	return JSON.stringify(object);
@@ -32,51 +30,58 @@ function handleCallbackErrors(error, response){
 	}
 }
 
-function initializeTotals(tableName,callbackFunction){
-	connection.query({query:'SELECT Count(Id) FROM ' + tableName}, function(error, response){
+function initializeTotals(){
+	connection.query({query:'SELECT Count(Id) FROM Survey_Response__c'}, function(error, response){
 		handleCallbackErrors(error, response);
 		totalVotes = response.records[0].get("expr0");
-		console.log("Votes: " + totalVotes);
-		connection.query({query:"SELECT Id, Vote__c, Count(Vote__c) FROM Survey_Response__c GROUP BY Vote__c"}, function(error,response){
+		connection.query({query:"SELECT Vote__c, Count(Id) FROM Survey_Response__c GROUP BY Vote__c"}, function(error,response){
 			handleCallbackErrors(error, response);
-			console.log(print(response));
-			exit();
-			followingVotes = response.records.length;
-			console.log('percentage: '+followingVotes/totalVotes);
-			callbackFunction();
+			for(var i=0; i<response.records.length; i++){
+				var record = response.records[i];
+				votesByCause[record.get("Vote__c")] = record.get("expr0");
+			}
+			console.log('Votes:');
+			for(cause in votesByCause){
+				console.log('\t' + votesByCause[cause] + '\t' + getPercentage(cause) + ' ' + cause);
+			}
+			console.log('\tTotal: ' + totalVotes);
+			subscribe('AllVotes');
 		});		
 	});
 }
 
 function subscribe(topicName){
-	console.log('Opening stream to ' + topicName);
+	//console.log('Opening stream to ' + topicName);
 	var stream = connection.stream({topic:topicName});
-	stream.on('connect', function(){console.log('connected');});
+	stream.on('connect', function(){console.log('Connected to ' + topicName + '.');});
 	stream.on('error',   function(e){console.log('error ' + e);});
 	stream.on('data',    handleData);
-	console.log('Opened stream ' + print(stream));
+	//console.log('Opened stream ' + print(stream));
 	return stream;
 }
 
+function getPercentage(cause){
+	return Math.floor(100*votesByCause[cause]/totalVotes) + '%';
+}
+
 function handleData(data){
-	console.log('Got stream data ' + data.sobject.Vote__c);
+	var cause = data.sobject.Vote__c;
+	console.log('Just received vote for ' + cause + '!');
 	totalVotes++;
-	if(data.sobject.Vote__c == followingVotesName){
-		followingVotes++;
-	}
-	console.log('percentage: ' + followingVotes/totalVotes);
+	votesByCause[cause] = votesByCause[cause] + 1;
+	console.log( cause + ' now has ' + getPercentage(cause) + ' of the vote.');
 }
 
 function authenticationCallback(error, response){
 	//console.log('In authentication callback.');
 	handleCallbackErrors(error, response);
-	console.log('Authenticated and received token ' + connection.oauth.access_token);
+	//console.log('Authenticated and received token ' + connection.oauth.access_token);
 	main();
 }
 
 function main(){
 	console.log('In main.');		
-	initializeTotals(followingTable,function(){subscribe('AllVotes');});
+	initializeTotals();
 }
 
 console.log('Connecting.');
