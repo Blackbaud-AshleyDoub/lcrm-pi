@@ -4,9 +4,11 @@ import fileinput
 import pyfirmata
 import time
 import sys
+import signal
 
+board = None
 
-def flashOnBoardLED(board):
+def flashOnBoardLED():
 	led = board.get_pin('d:13:o')
 	while True:
 		print 'beep!'
@@ -18,11 +20,12 @@ def flashOnBoardLED(board):
 def board():
 	print 'Initializing board...',
 	sys.stdout.flush()
+	global board
 	board = pyfirmata.Arduino('/dev/ttyACM0')
 	print 'done'
 	sys.stdout.flush()
-	#jellyfish()
-	flashOnBoardLED(board)
+	jellyfish()
+	#flashOnBoardLED()
 
 def jellyfish():
 	pins = []
@@ -33,7 +36,7 @@ def jellyfish():
 	while True:
 		for pin in pins:
 			toggle(pin, state)
-			time.sleep(1)
+			time.sleep(0.1)
 		state = not state
 	board.exit()
 
@@ -51,4 +54,10 @@ def readInput():
 		if cause == watchFor:
 			print percentage
 
+def destroy(signal, frame):
+	print 'Stopping board...',
+	board.exit()
+	print 'done'
+
+signal.signal(signal.SIGINT, destroy)
 board()
