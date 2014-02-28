@@ -24,8 +24,6 @@ def board():
 	board = pyfirmata.Arduino('/dev/ttyACM0')
 	print 'done'
 	sys.stdout.flush()
-	jellyfish()
-	#flashOnBoardLED()
 
 def jellyfish():
 	pins = []
@@ -56,8 +54,26 @@ def readInput():
 
 def destroy(signal, frame):
 	print 'Stopping board...',
-	board.exit()
+	if board != None:
+		board.exit()
 	print 'done'
+
+def turnOnFirstN(n):
+	for i in range(n):
+		pin[i].write(1)
+	for i in range(n,11):
+		pin[i].write(0)
 
 signal.signal(signal.SIGINT, destroy)
 board()
+jellyfish()
+turnOnFirstN(3)
+time.wait(2)
+turnOnFirstN(8)
+time.wait(2)
+turnOnFirstN(0)
+time.wait(2)
+turnOnFirstN(10)
+
+#flashOnBoardLED()
+
