@@ -1,5 +1,7 @@
 #!/usr/local/bin/node 
 
+var log = console.log;
+
 var appCredentials = {
     clientId: '3MVG9JZ_r.QzrS7jMWJX1xnsIjdc3cP8E5Bia4BLGUKBReyQboFezdlDwW06.xTMzDuYL2_Tjp2kQn8kg5mXh',
     clientSecret: '8545709856375773519',
@@ -23,19 +25,19 @@ function print(object){
 
 function handleCallbackErrors(error, response){
 	if(error){
-		console.log('Error: ' + error);
+		log('Error: ' + error);
 	}
 	else{
-		//console.log('Got response ' + print(response));
+		//log('Got response ' + print(response));
 	}
 }
 
 function printVoteStatus(){
-		console.log('Votes:');
+		log('Votes:');
 		for(cause in votesByCause){
-			console.log('\t' + votesByCause[cause] + '\t' + getPercentage(cause) + '\t' + cause);
+			log('\t' + votesByCause[cause] + '\t' + getPercentage(cause) + '\t' + cause);
 		}
-		console.log('\tTotal: ' + totalVotes);
+		log('\tTotal: ' + totalVotes);
 }
 
 function initializeTotals(){
@@ -55,12 +57,12 @@ function initializeTotals(){
 }
 
 function subscribe(topicName){
-	//console.log('Opening stream to ' + topicName);
+	//log('Opening stream to ' + topicName);
 	var stream = connection.stream({topic:topicName});
-	stream.on('connect', function(){console.log('Connected to ' + topicName + '.');});
-	stream.on('error',   function(e){console.log('error ' + e);});
+	stream.on('connect', function(){log('Connected to ' + topicName + '.');});
+	stream.on('error',   function(e){log('error ' + e);});
 	stream.on('data',    handleData);
-	//console.log('Opened stream ' + print(stream));
+	//log('Opened stream ' + print(stream));
 	return stream;
 }
 
@@ -70,27 +72,27 @@ function getPercentage(cause){
 
 function handleData(data){
 	var cause = data.sobject.Vote__c;
-	console.log('Just received vote for ' + cause + '!');
+	log('Just received vote for ' + cause + '!');
 	totalVotes++;
 	if(votesByCause[cause] === undefined){votesByCause[cause] = 0;}
 	votesByCause[cause] = votesByCause[cause] + 1;
-	console.log(cause + ' now has ' + getPercentage(cause) + ' of the vote.');
+	log(cause + ' now has ' + getPercentage(cause) + ' of the vote.');
 }
 
 function authenticationCallback(error, response){
-	//console.log('In authentication callback.');
+	//log('In authentication callback.');
 	handleCallbackErrors(error, response);
-	//console.log('Authenticated and received token ' + connection.oauth.access_token);
+	//log('Authenticated and received token ' + connection.oauth.access_token);
 	main();
 }
 
 function main(){
-	console.log('In main.');		
+	log('In main.');		
 	initializeTotals();
 }
 
-console.log('Connecting.');
+log('Connecting.');
 var connection = require('nforce').createConnection(appCredentials);
-console.log('Authenticating.');
+log('Authenticating.');
 connection.authenticate(sfCredentials, authenticationCallback);
 
